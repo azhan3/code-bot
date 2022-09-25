@@ -42,3 +42,4 @@ typing-extensions==4.0.1
 urllib3==1.26.7
 wsproto==1.0.0
 yarl==1.7.2
+pydoodle==1.1.3
