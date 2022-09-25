@@ -1,9 +1,4 @@
 import discord
-from discord_slash import SlashCommand
-from discord.ext import commands
-from PIL import ImageColor
-from discord.utils import get
-import pymongo
 import pydoodle
 import traceback
 import re
