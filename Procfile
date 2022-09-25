@@ -1,1 +1,1 @@
-worker: python3 code_club.py
+worker: python3 src/code_bot.py
