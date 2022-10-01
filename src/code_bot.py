@@ -2,6 +2,7 @@ import discord
 import pydoodle
 import traceback
 import re
+from discord.utils import get
 
 c = pydoodle.Compiler(clientId="f76e0eedaf35d2125e425e536d65481f",
                       clientSecret="42a08cbae4ba2d5d18389602e35c117945fd7d52df562a11bdce88070fb15120")
@@ -17,6 +18,12 @@ valid_languages = {
 
 color = 0x7D3C98
 
+name_list = ["brainfuck", "java", "c_", "cpp", "csharp", "python"]
+languages = ["Brainfuck", "Java", "C", "C++", "C#", "Python"]
+
+
+res = dict(zip(name_list, languages))
+messageID = 1025606561726464082
 class bot(discord.Client):
     def __init__(self, **options):
         super().__init__(**options)
@@ -29,13 +36,67 @@ class bot(discord.Client):
         }
 
     async def on_ready(self):
+
         print(self.user)
+
+    async def delete_role(self, role_name, message):
+        role_object = discord.utils.get(message.guild.roles, name=role_name)
+        await role_object.delete()
+
+    async def on_raw_reaction_add(self, payload):
+        guild = await client.fetch_guild(payload.guild_id)
+        user = await guild.fetch_member(payload.user_id)
+        if user != client.user:
+            if payload.message_id == messageID:
+                try:
+                    name = (str(payload.emoji).split(":")[1])
+                    print(name)
+                    role = get(guild.roles, name=res[name])
+                    await user.add_roles(role)
+                except (KeyError, IndexError) as e:
+                    pass
+
+    async def on_raw_reaction_remove(self, payload):
+        if payload.message_id == messageID:
+            try:
+                name = (str(payload.emoji).split(":")[1])
+                print(name)
+                guild = await client.fetch_guild(payload.guild_id)
+                role = get(guild.roles, name=res[name])
+                user = await guild.fetch_member(payload.user_id)
+                await user.remove_roles(role)
+            except (KeyError, IndexError) as e:
+                pass
+
+    async def test(self, message):
+        emojis = [discord.utils.get(message.guild.emojis, name=i) for i in name_list]
+        me = await message.channel.send(f'''
+        **Select the languages that you're learning/have learned:**
+
+Brainfuck: {emojis[0]}
+
+Java: {emojis[1]}
+
+C: {emojis[2]}
+
+C++: {emojis[3]}
+
+C#: {emojis[4]}
+
+Pyth:nauseated_face:n: {emojis[5]}
+
+        ''')
+        for i in name_list:
+            emoji = discord.utils.get(message.guild.emojis, name=i)
+            await me.add_reaction(emoji)
 
     async def on_message(self, message):
         if message.author == self.user: return
         self.lit = message.content
         self.cont = message.content.split()
         self.ctx = message
+        if self.lit == "roles" and message.author.id == 420417488283500576 and message.channel.id == 1017956650948235305:
+            await self.test(message)
         print(self.cont[0])
         try:
             if self.cont[0].lower() in self.commands:
@@ -47,6 +108,8 @@ class bot(discord.Client):
         if self.cont[1] not in valid_languages:
             await self.ctx.reply("not a valid language")
             return
+        print(self.lit.find("```\n"))
+
         run = self.lit[self.lit.find("```") + 3:-3]
         if self.lit.find("```") == -1:
             await self.ctx.reply("Please enter valid code")
@@ -66,9 +129,10 @@ class bot(discord.Client):
         await self.ctx.reply(embed=code_embed)
 
     async def help(self):
+        emolist = [[discord.utils.get(i.emojis, name=name) for i in self.guilds if discord.utils.get(i.emojis, name=name) is not None] for name in name_list]
         help_embed = discord.Embed(title="Commands", color=color)
         help_embed.add_field(name=".help", value="Sends this embed", inline=False)
-        list_of_langs = '\n'.join([f'\u2003 • {i}' for i in valid_languages])
+        list_of_langs = '\n'.join([f'\u2003 • {list(valid_languages)[i]} {emolist[i][0]}' for i in range(len(valid_languages))])
         help_embed.add_field(name=".run ```<Programming_Language>``` ```<Code Here>```", value=f"Runs your code, make sure to put your code in plain code blocks ``` to run \nAvailable Programming Languages:\n{list_of_langs}", inline=False)
         await self.ctx.reply(embed=help_embed)
 
