@@ -191,4 +191,4 @@ Pyth:nauseated_face:n: {emojis[5]}
 
 
 client = bot()
-client.run("MTAyMTg4NTU5ODY5NDM4MzY3Ng.GDzecT.sO1kS8jau4DaJgUxB_Krd30ZV8UnhGaR3BzFX0")
+client.run(Process.env.TOKEN)
